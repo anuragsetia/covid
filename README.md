@@ -5,9 +5,9 @@ To run these python scripts, please install requirements as follows -
 
  pip install -r requirements.txt
 
-and then run it from the command line to generate the chart as follows -
+and then run it from the command line to generate the chart using flask -
 
- python growth.py
+ flask run
 
 ## Pre-requisities
 
