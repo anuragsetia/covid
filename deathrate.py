@@ -16,14 +16,13 @@ def state_wise_death_ratio(df):
     df['Deaths per Recovered'] = df['Deaths per Recovered'].round(2)
     return df.loc[:,['State','Deaths per Recovered']]
 
-def line_chart(df, idx):
+def bar_chart(df, idx):
     df = df.set_index(idx)
-    df.plot(figsize=(10,5), grid=True)
+    df.plot(figsize=(10,5), kind='bar', grid=True)
     plt.show()
 
 # Death Rate state wise
 data = load_csv_data(state_wise_summary)
 #print_data_structure(data)
 death_rate = state_wise_death_ratio(data)
-print(death_rate)
-
+bar_chart(death_rate, 'State')
