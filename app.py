@@ -45,6 +45,7 @@ def death_rate():
     death_rate = death_rate.set_index('State')
 
     ax = death_rate.plot(figsize=(10,5), kind='bar')
+    ax.set_ylabel('Percentage')
     output = io.BytesIO()
     FigureCanvas(ax.figure).print_png(output)
     return Response(output.getvalue(), mimetype='image/png')
