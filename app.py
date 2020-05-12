@@ -22,6 +22,10 @@ def state_wise_death_ratio(df):
     df['Death Rate (%age or recovery)'] = df['Death Rate (%age or recovery)'].round(2)
     return df.loc[:,['State','Death Rate (%age or recovery)']]
 
+def new_and_recovered(df):
+    df['New Case Trend'] = df['Daily Confirmed'].rolling(5).mean()
+    return df.loc[:,['Date','Daily Confirmed','Daily Recovered', 'New Case Trend']]
+
 def cases_growth_chart(data):
     data['Total Active'] = data['Total Confirmed'] - data['Total Recovered'] - data['Total Deceased']
     data['GR (C)'] = data['Total Confirmed'].pct_change()
@@ -45,6 +49,18 @@ def death_rate():
     FigureCanvas(ax.figure).print_png(output)
     return Response(output.getvalue(), mimetype='image/png')
 
+@app.route('/new.png')
+def new_cases():
+    data = load_csv_data(case_time_series)
+    data = data.tail(45)
+    growth_rates = new_and_recovered(data)
+    growth_rates = growth_rates.set_index('Date')
+
+    ax = growth_rates.plot(figsize=(10,5))
+    output = io.BytesIO()
+    FigureCanvas(ax.figure).print_png(output)
+    return Response(output.getvalue(), mimetype='image/png')
+
 @app.route('/growth.png')
 def growth_rate():
     data = load_csv_data(case_time_series)
@@ -53,8 +69,8 @@ def growth_rate():
     growth_rates = growth_rates.set_index('Date')
 
     ax = growth_rates.plot(figsize=(10,5), secondary_y=['5-day GR (C)','5-day GR (A)'], grid=True)
-    ax.set_ylabel('Total Cases')
-    ax.right_ax.set_ylabel('Growth Rate Moving Avg')
+    ax.set_ylabel('# of cases')
+    ax.right_ax.set_ylabel('Growth Rate')
     output = io.BytesIO()
     FigureCanvas(ax.figure).print_png(output)
     return Response(output.getvalue(), mimetype='image/png')
