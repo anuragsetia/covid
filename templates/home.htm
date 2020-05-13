@@ -6,19 +6,36 @@
       ul#menu li {
         display:inline;
       }
-      /* unvisited link */
+      .row {
+        display: flex;
+      }
+      .column {
+        flex: 50%;
+        padding: 10px;
+      }
+      span {
+        text-align: center
+        margin:5px
+      }
+      li img {
+        object-fit: cover;
+        width: 90%
+      }
+      ul {
+        width: 100%;
+        list-style: none;
+        margin: auto;
+        white-space: nowrap;
+      }
       a:link {
         color: #ccc;
       }
-      /* visited link */
       a:visited {
         color: #095484;
       }
-      /* mouse over link */
       a:hover {
         color: #8ebf42;
       }
-      /* selected link */
       a:active {
         color: #800000;
       }
@@ -33,24 +50,29 @@
            <li align="right"><a href="https://github.com/anuragsetia/covid">Github project</a></li>
        </ul></div>
        <div>&nbsp;</div>
-       <div>
-         <div><B>Total Cases & Growth Rate</B>&nbsp;(Last 45 days)</div>
-         <div>&nbsp;</div>
-         <div><img src="/growth.png" alt="Cases Growth Rate"></div>
-       </div>
-       <div>&nbsp;</div>
        <div>&nbsp;</div>
        <div>
-         <div><B>Daily New Cases & Recoveries</B>&nbsp;(Last 45 days)</div>
+         <div>
+           <div><B>Total Cases & Growth Rate</B>&nbsp;(Last 45 days)</div>
+           <div>&nbsp;</div>
+           <div><img src="/growth.png" alt="Cases Growth Rate"></div>
+         </div>
          <div>&nbsp;</div>
-         <div><img src="/new.png" alt="New Cases & Recoveries"></div>
-       </div>
-       <div>&nbsp;</div>
-       <div>&nbsp;</div>
-       <div>
-         <div><B>State wise Death Rate</B></div>
          <div>&nbsp;</div>
-         <div><img src="/death.png" alt="State wise Death Rate"></div>
+         <div class="row">
+           <div class="column">
+             <ul>
+               <li><span><B>Daily New Cases & Recoveries</B>&nbsp;(Last 45 days)<span></li>
+               <li><img src="/new.png" alt="New Cases & Recoveries"></li>
+             </ul>
+           </div>
+           <div class="column">
+             <ul>
+               <li><span><B>State wise Death Rate</B></span></li>
+               <li><img src="/death.png" alt="State wise Death Rate"></li>
+             </ul>
+           </div>
+         </div>
        </div>
      </div>
      <div>&nbsp;</div>
