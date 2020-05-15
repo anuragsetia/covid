@@ -36,7 +36,14 @@ def cases_growth_chart(data):
     data['5-day GR (A)'] = data['GR (A)'].rolling(5).mean()
     data['5-day GR (A)'] = data['5-day GR (A)'].round(3)*100
     #lines = data.plot.line()
-    return data.loc[:,['Date','Total Confirmed','Total Active','5-day GR (C)','5-day GR (A)']]
+    return data.loc[:,['Date', '5-day GR (C)','5-day GR (A)']]
+
+def cases_total_chart(data):
+    data['Total Active'] = data['Total Confirmed'] - data['Total Recovered'] - data['Total Deceased']
+    data['GR (C)'] = data['Total Confirmed'].pct_change()
+    data['GR (A)'] = data['Total Active'].pct_change()
+
+    return data.loc[:,['Date','Total Confirmed','Total Active']]
 
 @app.route('/death.png')
 def death_rate():
@@ -44,7 +51,7 @@ def death_rate():
     death_rate = state_wise_death_ratio(data)
     death_rate = death_rate.set_index('State')
 
-    ax = death_rate.plot(figsize=(10,5), kind='bar')
+    ax = death_rate.plot(figsize=(10,7), kind='bar')
     ax.set_ylabel('Percentage')
     output = io.BytesIO()
     FigureCanvas(ax.figure).print_png(output)
@@ -69,9 +76,20 @@ def growth_rate():
     growth_rates = cases_growth_chart(data)
     growth_rates = growth_rates.set_index('Date')
 
-    ax = growth_rates.plot(figsize=(10,5), secondary_y=['5-day GR (C)','5-day GR (A)'], grid=True)
-    ax.set_ylabel('# of cases')
-    ax.right_ax.set_ylabel('Growth Rate')
+    ax = growth_rates.plot(figsize=(10,5), grid=True)
+    ax.set_ylabel('Growth Rate')
+    output = io.BytesIO()
+    FigureCanvas(ax.figure).print_png(output)
+    return Response(output.getvalue(), mimetype='image/png')
+
+@app.route('/total.png')
+def total():
+    data = load_csv_data(case_time_series)
+    data = data.tail(45)
+    growth_rates = cases_total_chart(data)
+    growth_rates = growth_rates.set_index('Date')
+
+    ax = growth_rates.plot(figsize=(10,5), grid=True)
     output = io.BytesIO()
     FigureCanvas(ax.figure).print_png(output)
     return Response(output.getvalue(), mimetype='image/png')
