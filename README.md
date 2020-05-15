@@ -5,7 +5,7 @@ To run these python scripts, please install requirements as follows -
 
     pip install -r requirements.txt
 
-and then run it from the command line to generate the chart using flask -
+Setup environment variable 'FLASK_APP' to main.py and then run it from the command line to generate the chart using flask -
 
     flask run
 
