@@ -45,6 +45,12 @@ def cases_total_chart(data):
 
     return data.loc[:,['Date','Total Confirmed','Total Active']]
 
+def chartImage(ax):
+    output = io.BytesIO()
+    FigureCanvas(ax.figure).print_png(output)
+    return Response(output.getvalue(), mimetype='image/png')
+
+
 @app.route('/death.png')
 def death_rate():
     data = load_csv_data(state_wise_summary)
@@ -53,9 +59,7 @@ def death_rate():
 
     ax = death_rate.plot(figsize=(10,7), kind='bar')
     ax.set_ylabel('Percentage')
-    output = io.BytesIO()
-    FigureCanvas(ax.figure).print_png(output)
-    return Response(output.getvalue(), mimetype='image/png')
+    return chartImage(ax)
 
 @app.route('/new.png')
 def new_cases():
@@ -65,9 +69,7 @@ def new_cases():
     growth_rates = growth_rates.set_index('Date')
 
     ax = growth_rates.plot(figsize=(10,5))
-    output = io.BytesIO()
-    FigureCanvas(ax.figure).print_png(output)
-    return Response(output.getvalue(), mimetype='image/png')
+    return chartImage(ax)
 
 @app.route('/growth.png')
 def growth_rate():
@@ -78,9 +80,7 @@ def growth_rate():
 
     ax = growth_rates.plot(figsize=(10,5), grid=True)
     ax.set_ylabel('Growth Rate')
-    output = io.BytesIO()
-    FigureCanvas(ax.figure).print_png(output)
-    return Response(output.getvalue(), mimetype='image/png')
+    return chartImage(ax)
 
 @app.route('/total.png')
 def total():
@@ -90,9 +90,7 @@ def total():
     growth_rates = growth_rates.set_index('Date')
 
     ax = growth_rates.plot(figsize=(10,5), grid=True)
-    output = io.BytesIO()
-    FigureCanvas(ax.figure).print_png(output)
-    return Response(output.getvalue(), mimetype='image/png')
+    return chartImage(ax)
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
