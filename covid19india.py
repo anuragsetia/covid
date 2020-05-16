@@ -25,7 +25,4 @@ def cases_growth_chart(data):
 
 def cases_total_chart(data):
     data['Total Active'] = data['Total Confirmed'] - data['Total Recovered'] - data['Total Deceased']
-    data['GR (C)'] = data['Total Confirmed'].pct_change()
-    data['GR (A)'] = data['Total Active'].pct_change()
-
     return data.loc[:,['Date','Total Confirmed','Total Active']]

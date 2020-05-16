@@ -9,6 +9,7 @@ from matplotlib.figure import Figure
 from flask import Flask, render_template, Response
 
 import covid19india as ind
+import apify
 
 app = Flask(__name__)
 
@@ -18,12 +19,32 @@ korea_summary = "https://api.apify.com/v2/datasets/Lc0Hoa8MgAbscJA4w/items?forma
 
 def load_csv_data(uri):
     data = pd.read_csv(uri)
+#    print(data.dtypes)
     return data
 
 def chartImage(ax):
     output = io.BytesIO()
     FigureCanvas(ax.figure).print_png(output)
     return Response(output.getvalue(), mimetype='image/png')
+
+@app.route('/vs-korea.png')
+def vs_korea():
+    korea = load_csv_data(korea_summary)
+    korea = apify.cases_total_chart(korea)
+    korea = korea[korea['Active'] >=1000].reset_index()
+    korea = korea.loc[:,['Active']]
+
+    india = load_csv_data(case_time_series)
+    vs_korea = ind.cases_total_chart(india)
+    vs_korea['Active (IND)'] = vs_korea['Total Active']
+    vs_korea = vs_korea[vs_korea['Active (IND)'] >=1000].reset_index()
+    vs_korea = vs_korea.loc[:,['Active (IND)']]
+#    vs_korea['Active (KOR)'] = korea['Active'].to_numpy()
+    vs_korea = pd.concat([vs_korea, korea], axis=1)
+
+    ax = vs_korea.plot(figsize=(10,5))
+    ax.set_xlabel('Days from 1000 cases')
+    return chartImage(ax)
 
 @app.route('/death.png')
 def death_rate():
