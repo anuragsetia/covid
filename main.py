@@ -64,7 +64,8 @@ def death_rate():
 @app.route('/new.png')
 def new_cases():
     data = load_csv_data(case_time_series)
-    data = data.tail(45)
+    data = data.tail(46)
+    data = data.head(45)
     growth_rates = new_and_recovered(data)
     growth_rates = growth_rates.set_index('Date')
 
@@ -74,7 +75,8 @@ def new_cases():
 @app.route('/growth.png')
 def growth_rate():
     data = load_csv_data(case_time_series)
-    data = data.tail(45)
+    data = data.tail(46)
+    data = data.head(45)
     growth_rates = cases_growth_chart(data)
     growth_rates = growth_rates.set_index('Date')
 
@@ -85,7 +87,8 @@ def growth_rate():
 @app.route('/total.png')
 def total():
     data = load_csv_data(case_time_series)
-    data = data.tail(45)
+    data = data.tail(46)
+    data = data.head(45)
     growth_rates = cases_total_chart(data)
     growth_rates = growth_rates.set_index('Date')
 
