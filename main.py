@@ -13,9 +13,12 @@ import apify
 
 app = Flask(__name__)
 
+india_summary = "https://coronavirus-19-api.herokuapp.com/countries/india"
+
 state_wise_summary = "https://api.covid19india.org/csv/latest/state_wise.csv"
 case_time_series = "https://api.covid19india.org/csv/latest/case_time_series.csv"
 korea_summary = "https://api.apify.com/v2/datasets/Lc0Hoa8MgAbscJA4w/items?format=csv&clean=1"
+spain_summary = "https://api.apify.com/v2/datasets/hxwow9BB75z8RV3JT/items?format=csv&clean=1"
 
 def load_csv_data(uri):
     data = pd.read_csv(uri)
@@ -46,6 +49,25 @@ def vs_korea():
     ax.set_xlabel('Days from 1000 cases')
     return chartImage(ax)
 
+@app.route('/vs-spain.png')
+def vs_spain():
+    spain = load_csv_data(spain_summary)
+    spain = apify.cases_total_spain(spain)
+    spain = spain[spain['Active'] >=1000].reset_index()
+    spain = spain.loc[:,['Active']]
+
+    india = load_csv_data(case_time_series)
+    vs_spain = ind.cases_total_chart(india)
+    vs_spain['Active (IND)'] = vs_spain['Total Active']
+    vs_spain = vs_spain[vs_spain['Active (IND)'] >=1000].reset_index()
+    vs_spain = vs_spain.loc[:,['Active (IND)']]
+#    vs_spain['Active (KOR)'] = spain['Active'].to_numpy()
+    vs_spain = pd.concat([vs_spain, spain], axis=1)
+
+    ax = vs_spain.plot(figsize=(10,5))
+    ax.set_xlabel('Days from 1000 cases')
+    return chartImage(ax)
+
 @app.route('/death.png')
 def death_rate():
     data = load_csv_data(state_wise_summary)
@@ -71,7 +93,7 @@ def new_cases():
 def growth_rate():
     data = load_csv_data(case_time_series)
     data = data.tail(46)
-    data = data.head(45)
+    #data = data.head(45)
     growth_rates = ind.cases_growth_chart(data)
     growth_rates = growth_rates.set_index('Date')
 

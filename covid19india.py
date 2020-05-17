@@ -21,6 +21,7 @@ def cases_growth_chart(data):
     data['5-day GR (A)'] = data['GR (A)'].rolling(5).mean()
     data['5-day GR (A)'] = data['5-day GR (A)'].round(3)*100
     #lines = data.plot.line()
+#    print(data)
     return data.loc[:,['Date', '5-day GR (C)','5-day GR (A)']]
 
 def cases_total_chart(data):
