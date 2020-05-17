@@ -54,7 +54,7 @@ def vs_country():
 
     india = load_csv_data(case_time_series)
     compared = ind.cases_total_chart(india)
-    compared['India'] = compared['Total Active']
+    compared['India'] = compared['Total Confirmed']
     compared = compared[compared['India'] >=1000].reset_index()
     compared = compared.loc[:,['India']]
 #    compared['Active (KOR)'] = comp_nt['Active'].to_numpy()
