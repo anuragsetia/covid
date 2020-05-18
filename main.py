@@ -1,98 +1,150 @@
 import io
 
-from flask import Flask, render_template, Response
-
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
+
+from flask import Flask, render_template, Response, request
+
+import covid19india as ind
+import covid19api as world
+import apify
 
 app = Flask(__name__)
 
+#covid19india endpoints
 state_wise_summary = "https://api.covid19india.org/csv/latest/state_wise.csv"
 case_time_series = "https://api.covid19india.org/csv/latest/case_time_series.csv"
 
+#covid19api endpoints
+country_summary = "https://api.covid19api.com/total/country/{}/status/confirmed"
+
+#apify endpoints
+korea_summary = "https://api.apify.com/v2/datasets/Lc0Hoa8MgAbscJA4w/items?format=csv&clean=1"
+spain_summary = "https://api.apify.com/v2/datasets/hxwow9BB75z8RV3JT/items?format=csv&clean=1"
+
+#endpoint for totals
+india_summary = "https://coronavirus-19-api.herokuapp.com/countries/india"
+
+
 def load_csv_data(uri):
     data = pd.read_csv(uri)
+#    print(data.dtypes)
     return data
 
-def state_wise_death_ratio(df):
-    df['Death Rate (%age or recovery)'] = df['Deaths']*100/df['Recovered']
-    df['Death Rate (%age or recovery)'] = df['Death Rate (%age or recovery)'].round(2)
-    return df.loc[:,['State','Death Rate (%age or recovery)']]
+def load_json_Data(uri):
+    data = pd.read_json(uri)
+    return data
 
-def new_and_recovered(df):
-    df['New Case Trend'] = df['Daily Confirmed'].rolling(5).mean()
-    return df.loc[:,['Date','Daily Confirmed','Daily Recovered', 'New Case Trend']]
+def chartImage(ax):
+    output = io.BytesIO()
+    FigureCanvas(ax.figure).print_png(output)
+    return Response(output.getvalue(), mimetype='image/png')
 
-def cases_growth_chart(data):
-    data['Total Active'] = data['Total Confirmed'] - data['Total Recovered'] - data['Total Deceased']
-    data['GR (C)'] = data['Total Confirmed'].pct_change()
-    data['GR (A)'] = data['Total Active'].pct_change()
+@app.route('/compare-active.png')
+def vs_country():
+    comp_nt_phrase = request.args.get('country')
+    comp_nt = load_json_Data(country_summary.format(comp_nt_phrase))
+    comp_nt = world.active_summary(comp_nt)
+    comp_nt = comp_nt[comp_nt['Active'] >= 1000].reset_index()
+    comp_nt[comp_nt_phrase] = comp_nt['Active']
+    comp_nt = comp_nt.loc[:,[comp_nt_phrase]]
 
-    data['5-day GR (C)'] = data['GR (C)'].rolling(5).mean()
-    data['5-day GR (C)'] = data['5-day GR (C)'].round(3)*100
-    data['5-day GR (A)'] = data['GR (A)'].rolling(5).mean()
-    data['5-day GR (A)'] = data['5-day GR (A)'].round(3)*100
-    #lines = data.plot.line()
-    return data.loc[:,['Date', '5-day GR (C)','5-day GR (A)']]
+    india = load_csv_data(case_time_series)
+    compared = ind.cases_total_chart(india)
+    compared['India'] = compared['Total Confirmed']
+    compared = compared[compared['India'] >=1000].reset_index()
+    compared = compared.loc[:,['India']]
+#    compared['Active (KOR)'] = comp_nt['Active'].to_numpy()
+    compared = pd.concat([compared, comp_nt], axis=1)
 
-def cases_total_chart(data):
-    data['Total Active'] = data['Total Confirmed'] - data['Total Recovered'] - data['Total Deceased']
-    data['GR (C)'] = data['Total Confirmed'].pct_change()
-    data['GR (A)'] = data['Total Active'].pct_change()
+    ax = compared.plot(figsize=(10,5))
+    ax.set_xlabel('Days from 1000 cases')
+    return chartImage(ax)
 
-    return data.loc[:,['Date','Total Confirmed','Total Active']]
+
+
+@app.route('/vs-korea.png')
+def vs_korea():
+    korea = load_csv_data(korea_summary)
+    korea = apify.cases_total_chart(korea)
+    korea = korea[korea['Active'] >=1000].reset_index()
+    korea = korea.loc[:,['Active']]
+
+    india = load_csv_data(case_time_series)
+    vs_korea = ind.cases_total_chart(india)
+    vs_korea['India'] = vs_korea['Total Active']
+    vs_korea = vs_korea[vs_korea['India'] >=1000].reset_index()
+    vs_korea = vs_korea.loc[:,['India']]
+#    vs_korea['Active (KOR)'] = korea['Active'].to_numpy()
+    vs_korea = pd.concat([vs_korea, korea], axis=1)
+
+    ax = vs_korea.plot(figsize=(10,5))
+    ax.set_xlabel('Days from 1000 cases')
+    return chartImage(ax)
+
+@app.route('/vs-spain.png')
+def vs_spain():
+    spain = load_csv_data(spain_summary)
+    spain = apify.cases_total_spain(spain)
+    spain = spain[spain['Active'] >=1000].reset_index()
+    spain = spain.loc[:,['Active']]
+
+    india = load_csv_data(case_time_series)
+    vs_spain = ind.cases_total_chart(india)
+    vs_spain['India'] = vs_spain['Total Active']
+    vs_spain = vs_spain[vs_spain['India'] >=1000].reset_index()
+    vs_spain = vs_spain.loc[:,['India']]
+#    vs_spain['Active (KOR)'] = spain['Active'].to_numpy()
+    vs_spain = pd.concat([vs_spain, spain], axis=1)
+
+    ax = vs_spain.plot(figsize=(10,5))
+    ax.set_xlabel('Days from 1000 cases')
+    return chartImage(ax)
 
 @app.route('/death.png')
 def death_rate():
     data = load_csv_data(state_wise_summary)
-    death_rate = state_wise_death_ratio(data)
+    death_rate = ind.state_wise_death_ratio(data)
     death_rate = death_rate.set_index('State')
 
     ax = death_rate.plot(figsize=(10,7), kind='bar')
     ax.set_ylabel('Percentage')
-    output = io.BytesIO()
-    FigureCanvas(ax.figure).print_png(output)
-    return Response(output.getvalue(), mimetype='image/png')
+    return chartImage(ax)
 
 @app.route('/new.png')
 def new_cases():
     data = load_csv_data(case_time_series)
     data = data.tail(45)
-    growth_rates = new_and_recovered(data)
+    growth_rates = ind.new_and_recovered(data)
     growth_rates = growth_rates.set_index('Date')
 
     ax = growth_rates.plot(figsize=(10,5))
-    output = io.BytesIO()
-    FigureCanvas(ax.figure).print_png(output)
-    return Response(output.getvalue(), mimetype='image/png')
+    return chartImage(ax)
 
 @app.route('/growth.png')
 def growth_rate():
     data = load_csv_data(case_time_series)
     data = data.tail(45)
-    growth_rates = cases_growth_chart(data)
+    #data = data.head(45)
+    growth_rates = ind.cases_growth_chart(data)
     growth_rates = growth_rates.set_index('Date')
 
     ax = growth_rates.plot(figsize=(10,5), grid=True)
     ax.set_ylabel('Growth Rate')
-    output = io.BytesIO()
-    FigureCanvas(ax.figure).print_png(output)
-    return Response(output.getvalue(), mimetype='image/png')
+    return chartImage(ax)
 
 @app.route('/total.png')
 def total():
     data = load_csv_data(case_time_series)
     data = data.tail(45)
-    growth_rates = cases_total_chart(data)
+    growth_rates = ind.cases_total_chart(data)
     growth_rates = growth_rates.set_index('Date')
 
     ax = growth_rates.plot(figsize=(10,5), grid=True)
-    output = io.BytesIO()
-    FigureCanvas(ax.figure).print_png(output)
-    return Response(output.getvalue(), mimetype='image/png')
+    return chartImage(ax)
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
