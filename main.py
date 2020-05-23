@@ -16,14 +16,15 @@ app = Flask(__name__)
 
 #covid19india endpoints
 state_wise_summary = "https://api.covid19india.org/csv/latest/state_wise.csv"
+state_wise_time_series = "https://api.covid19india.org/csv/latest/state_wise_daily.csv"
 case_time_series = "https://api.covid19india.org/csv/latest/case_time_series.csv"
 
 #covid19api endpoints
 country_summary = "https://api.covid19api.com/total/country/{}/status/confirmed"
 
 #apify endpoints
-korea_summary = "https://api.apify.com/v2/datasets/Lc0Hoa8MgAbscJA4w/items?format=csv&clean=1"
-spain_summary = "https://api.apify.com/v2/datasets/hxwow9BB75z8RV3JT/items?format=csv&clean=1"
+#korea_summary = "https://api.apify.com/v2/datasets/Lc0Hoa8MgAbscJA4w/items?format=csv&clean=1"
+#spain_summary = "https://api.apify.com/v2/datasets/hxwow9BB75z8RV3JT/items?format=csv&clean=1"
 
 #endpoint for totals
 india_summary = "https://coronavirus-19-api.herokuapp.com/countries/india"
@@ -43,6 +44,7 @@ def chartImage(ax):
     FigureCanvas(ax.figure).print_png(output)
     return Response(output.getvalue(), mimetype='image/png')
 
+# compare confirmed case curve with other countries
 @app.route('/compare-active.png')
 def vs_country():
     comp_nt_phrase = request.args.get('country')
@@ -64,46 +66,6 @@ def vs_country():
     ax.set_xlabel('Days from 1000 cases')
     return chartImage(ax)
 
-
-
-@app.route('/vs-korea.png')
-def vs_korea():
-    korea = load_csv_data(korea_summary)
-    korea = apify.cases_total_chart(korea)
-    korea = korea[korea['Active'] >=1000].reset_index()
-    korea = korea.loc[:,['Active']]
-
-    india = load_csv_data(case_time_series)
-    vs_korea = ind.cases_total_chart(india)
-    vs_korea['India'] = vs_korea['Total Active']
-    vs_korea = vs_korea[vs_korea['India'] >=1000].reset_index()
-    vs_korea = vs_korea.loc[:,['India']]
-#    vs_korea['Active (KOR)'] = korea['Active'].to_numpy()
-    vs_korea = pd.concat([vs_korea, korea], axis=1)
-
-    ax = vs_korea.plot(figsize=(10,5))
-    ax.set_xlabel('Days from 1000 cases')
-    return chartImage(ax)
-
-@app.route('/vs-spain.png')
-def vs_spain():
-    spain = load_csv_data(spain_summary)
-    spain = apify.cases_total_spain(spain)
-    spain = spain[spain['Active'] >=1000].reset_index()
-    spain = spain.loc[:,['Active']]
-
-    india = load_csv_data(case_time_series)
-    vs_spain = ind.cases_total_chart(india)
-    vs_spain['India'] = vs_spain['Total Active']
-    vs_spain = vs_spain[vs_spain['India'] >=1000].reset_index()
-    vs_spain = vs_spain.loc[:,['India']]
-#    vs_spain['Active (KOR)'] = spain['Active'].to_numpy()
-    vs_spain = pd.concat([vs_spain, spain], axis=1)
-
-    ax = vs_spain.plot(figsize=(10,5))
-    ax.set_xlabel('Days from 1000 cases')
-    return chartImage(ax)
-
 @app.route('/death.png')
 def death_rate():
     data = load_csv_data(state_wise_summary)
@@ -112,6 +74,15 @@ def death_rate():
 
     ax = death_rate.plot(figsize=(10,7), kind='bar')
     ax.set_ylabel('Percentage')
+    return chartImage(ax)
+
+@app.route('/state-top.png')
+def state_top():
+    data = load_csv_data(state_wise_time_series)
+    death_rate = ind.top_growing_states(data)
+
+    ax = death_rate.plot(figsize=(10,7), kind='bar')
+    ax.set_ylabel('Avg. New Cases / day')
     return chartImage(ax)
 
 @app.route('/new.png')
