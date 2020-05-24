@@ -10,7 +10,6 @@ from flask import Flask, render_template, Response, request
 
 import covid19india as ind
 import covid19api as world
-import apify
 
 app = Flask(__name__)
 
@@ -79,9 +78,9 @@ def death_rate():
 @app.route('/state-top.png')
 def state_top():
     data = load_csv_data(state_wise_time_series)
-    death_rate = ind.top_growing_states(data)
+    top_states = ind.top_growing_states(data)
 
-    ax = death_rate.plot(figsize=(10,7), kind='bar')
+    ax = top_states.plot(figsize=(10,7), kind='bar')
     ax.set_ylabel('Avg. New Cases / day')
     return chartImage(ax)
 

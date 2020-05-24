@@ -13,7 +13,7 @@ def top_growing_states(df):
     df = df.nlargest(6,'Confirmed').tail(5)
     df = df.rename_axis('State')
     print(df.dtypes)
-    return df.loc[:,['State','Confirmed']]
+    return df.pop('Confirmed')
 
 def new_and_recovered(df):
     df['New Case Trend'] = df['Daily Confirmed'].rolling(5).mean()
