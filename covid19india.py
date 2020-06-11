@@ -15,6 +15,11 @@ def top_growing_states(df):
     print(df.dtypes)
     return df.pop('Confirmed')
 
+def state_positivity_line(df):
+    df['POSITIVITY RATE'] = df['Total Tested']/df['Positive']
+    df['Date'] = df['Updated On']
+    return df.loc[:,['Date','State','POSITIVITY RATE']]
+
 def new_and_recovered(df):
     df['New Case Trend'] = df['Daily Confirmed'].rolling(5).mean()
     return df.loc[:,['Date','Daily Confirmed','Daily Recovered', 'New Case Trend']]

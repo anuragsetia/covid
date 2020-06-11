@@ -16,6 +16,7 @@ app = Flask(__name__)
 #covid19india endpoints
 state_wise_summary = "https://api.covid19india.org/csv/latest/state_wise.csv"
 state_wise_time_series = "https://api.covid19india.org/csv/latest/state_wise_daily.csv"
+state_wise_testing = "https://api.covid19india.org/csv/latest/statewise_tested_numbers_data.csv"
 case_time_series = "https://api.covid19india.org/csv/latest/case_time_series.csv"
 
 #covid19api endpoints
@@ -63,6 +64,15 @@ def vs_country():
 
     ax = compared.plot(figsize=(10,5))
     ax.set_xlabel('Days from 1000 cases')
+    return chartImage(ax)
+
+@app.route('/state-positive.png')
+def positivity_rates():
+    data = load_csv_data(state_wise_testing)
+    p_rates = ind.state_positivity_line(data)
+    p_rates = p_rates.set_index('State')
+
+    ax = p_rates.plot(figsize=(10,7))
     return chartImage(ax)
 
 @app.route('/death.png')
