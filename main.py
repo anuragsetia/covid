@@ -70,7 +70,7 @@ def vs_country():
 def positivity_rates():
     data = load_csv_data(state_wise_testing)
     p_rates = ind.state_positivity_line(data)
-    p_rates = p_rates.set_index('State')
+    p_rates = p_rates.set_index(['State','Date'])
 
     ax = p_rates.plot(figsize=(10,7))
     return chartImage(ax)

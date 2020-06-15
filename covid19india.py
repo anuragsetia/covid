@@ -22,7 +22,8 @@ def state_positivity_line(df):
 
 def new_and_recovered(df):
     df['New Case Trend'] = df['Daily Confirmed'].rolling(5).mean()
-    return df.loc[:,['Date','Daily Confirmed','Daily Recovered', 'New Case Trend']]
+    df['Recovered Trend'] = df['Daily Recovered'].rolling(5).mean()
+    return df.loc[:,['Date','Recovered Trend', 'New Case Trend']]
 
 def cases_growth_chart(data):
     data['Total Active'] = data['Total Confirmed'] - data['Total Recovered'] - data['Total Deceased']
@@ -34,7 +35,7 @@ def cases_growth_chart(data):
     data['5-day GR (A)'] = data['GR (A)'].rolling(5).mean()
     data['5-day GR (A)'] = data['5-day GR (A)'].round(3)*100
     #lines = data.plot.line()
-#    print(data)
+    print(data)
     return data.loc[:,['Date', '5-day GR (C)','5-day GR (A)']]
 
 def cases_total_chart(data):
