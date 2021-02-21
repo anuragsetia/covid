@@ -8,11 +8,20 @@ def state_wise_death_ratio(df):
     return df.loc[:,['State','Death Rate (%age or recovery)']]
 
 def top_growing_states(df):
+    print(df)
+    # df = df.tail(30) # Last 10 days
+    df = df.groupby(by='Status').mean().transpose()
+    print(df)
+    df = df.nlargest(6,'Confirmed').tail(5)
+    df = df.rename_axis('State')
+    # print(df.dtypes)
+    return df.pop('Confirmed')
+
+def top_cases_states(df):
     df = df.tail(15) # Last 5 days
     df = df.groupby(by='Status').mean().transpose()
     df = df.nlargest(6,'Confirmed').tail(5)
     df = df.rename_axis('State')
-    print(df.dtypes)
     return df.pop('Confirmed')
 
 def state_positivity_line(df):

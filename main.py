@@ -94,6 +94,15 @@ def state_top():
     ax.set_ylabel('Avg. New Cases / day')
     return chartImage(ax)
 
+@app.route('/state-top-cases.png')
+def state_top_cases():
+    data = load_csv_data(state_wise_time_series)
+    top_states = ind.top_cases_states(data)
+
+    ax = top_states.plot(figsize=(10,7), kind='bar')
+    ax.set_ylabel('Avg. New Cases / day')
+    return chartImage(ax)
+
 @app.route('/new.png')
 def new_cases():
     data = load_csv_data(case_time_series)
