@@ -36,3 +36,6 @@ def cases_growth_chart(data):
 def cases_total_chart(data):
     data['Total Active'] = data['Total Confirmed'] - data['Total Recovered'] - data['Total Deceased']
     return data.loc[:,['Date','Total Active']]
+
+def cases_confirmed_total_chart(data):
+    return data.loc[:,['Date','Total Confirmed']]
