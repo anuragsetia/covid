@@ -97,7 +97,7 @@ def new_cases():
 @app.route('/growth.png')
 def growth_rate():
     data = load_csv_data(case_time_series)
-    data = data.tail(90)
+    data = data.tail(180)
     #data = data.head(45)
     growth_rates = ind.cases_growth_chart(data)
     growth_rates = growth_rates.set_index('Date')
