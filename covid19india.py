@@ -27,11 +27,11 @@ def cases_growth_chart(data):
 
     data['GR (A)'] = data['Total Active'].pct_change()
     data['7-day GR (A)'] = data['GR (A)'].rolling(7).mean()
-    data['Growth Rate (7d Moving Avg)'] = data['7-day GR (A)'].round(3)*100
+    data['Trendline (moving avg)'] = data['7-day GR (A)'].round(3)*100
     #lines = data.plot.line()
 #    print(data)
     # return data.loc[:,['Date', '5-day GR (C)','5-day GR (A)']]
-    return data.loc[:,['Date', 'Growth Rate (7d Moving Avg)']]
+    return data.loc[:,['Date', 'Trendline (moving avg)']]
 
 def cases_total_chart(data):
     data['Total Active'] = data['Total Confirmed'] - data['Total Recovered'] - data['Total Deceased']

@@ -39,6 +39,8 @@ def load_json_Data(uri):
     return data
 
 def chartImage(ax):
+    for tick in ax.get_xticklabels():
+        tick.set_rotation(45)
     output = io.BytesIO()
     FigureCanvas(ax.figure).print_png(output)
     return Response(output.getvalue(), mimetype='image/png')
@@ -102,8 +104,8 @@ def growth_rate():
     growth_rates = ind.cases_growth_chart(data)
     growth_rates = growth_rates.set_index('Date')
 
-    ax = growth_rates.plot(figsize=(10,5), grid=True)
-    ax.set_ylabel('Growth Rate')
+    ax = growth_rates.plot(figsize=(10,8), grid=True)
+    ax.set_ylabel('Growth %age')
     return chartImage(ax)
 
 @app.route('/total.png')
