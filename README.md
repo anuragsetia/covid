@@ -9,6 +9,8 @@ Setup environment variable 'FLASK_APP' to main.py and then run it from the comma
 
     flask run
 
+Once the application is running, each of the charts is published as an image therefore, an HTTP Get request can be used to generate the required charts which can be included in a webpage or document.
+
 ## Pre-requisities
 
 1. Python v3 onwards
